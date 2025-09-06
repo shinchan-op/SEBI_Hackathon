@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bond Trading Platform - Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0aec0;
+            margin-bottom: 40px;
+        }
+        
+        .platform-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .platform-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .platform-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+        
+        .platform-card p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .platform-card .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .platform-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .status {
+            background: rgba(72, 187, 120, 0.1);
+            border: 1px solid rgba(72, 187, 120, 0.3);
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left;
+        }
+        
+        .instructions h4 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .instructions ol {
+            color: #a0aec0;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #48bb78;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .platform-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .logo {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏦</div>
+        <h1 class="title">Bond Trading Platform</h1>
+        <p class="subtitle">Advanced Bond Trading & Market Operations</p>
+        
+        <div class="status">
+            ✅ Platform Ready - All systems operational
+        </div>
+        
+        <div class="platform-cards">
+            <div class="platform-card" onclick="openClientPortal()">
+                <h3>🏪 Bond Bazaar</h3>
+                <p>Access the client-side interface for trading, portfolio management, and market analysis. Perfect for investors and traders.</p>
+                <a href="client-frontend.html" class="btn">Open Bond Bazaar</a>
+            </div>
+            
+            <div class="platform-card" onclick="openExchangePortal()">
+                <h3>🏛️ Bond Xchange</h3>
+                <p>Access the exchange-side interface for market operations, analytics, and administration. For market makers and administrators.</p>
+                <a href="exchange-frontend.html" class="btn">Open Bond Xchange</a>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h4>🚀 Quick Start Instructions</h4>
+            <ol>
+                <li><strong>Start the Backend:</strong> Run <span class="code">npm start</span> in the packages/backend directory</li>
+                <li><strong>Start the Frontend:</strong> Run <span class="code">npm start</span> in the packages/frontend directory (if using Next.js)</li>
+                <li><strong>Access the Platform:</strong> Click on either portal above to start trading</li>
+                <li><strong>API Endpoint:</strong> The backend runs on <span class="code">http://localhost:3001</span></li>
+                <li><strong>Database:</strong> SQLite database is automatically created and seeded with sample data</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function openClientPortal() {
+            window.open('client-frontend.html', '_blank');
+        }
+        
+        function openExchangePortal() {
+            window.open('exchange-frontend.html', '_blank');
+        }
+        
+        // Check if backend is running
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                if (response.ok) {
+                    console.log('Backend is running');
+                } else {
+                    console.log('Backend is not responding');
+                }
+            } catch (error) {
+                console.log('Backend is not running');
+            }
+        }
+        
+        // Check backend status on load
+        checkBackendStatus();
+    </script>
+</body>
+</html>

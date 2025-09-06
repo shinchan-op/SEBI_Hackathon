@@ -1,0 +1,21 @@
+{
+  "name": "sebi-demo",
+  "version": "1.0.0",
+  "description": "SEBI Fractional Bond Marketplace Demo",
+  "main": "simple-demo.js",
+  "scripts": {
+    "start": "node simple-demo.js",
+    "dev": "nodemon simple-demo.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "decimal.js": "^10.4.3",
+    "express": "^4.18.2",
+    "moment": "^2.29.4",
+    "pg": "^8.11.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

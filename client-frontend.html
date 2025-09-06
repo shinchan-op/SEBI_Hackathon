@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bond Bazaar - Client Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .logo i {
+            color: #fbbf24;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: #fbbf24;
+            color: #1e3a8a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .balance {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-title i {
+            color: #fbbf24;
+        }
+        
+        .market-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric {
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        .positive {
+            color: #10b981;
+        }
+        
+        .negative {
+            color: #ef4444;
+        }
+        
+        .neutral {
+            color: #6b7280;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .bond-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .bond-item {
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .bond-item:hover {
+            background: #1f2937;
+            border-color: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        .bond-category {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+        
+        .bond-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .bond-name {
+            font-weight: 600;
+            color: #f9fafb;
+            font-size: 1.1rem;
+        }
+        
+        .bond-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .bond-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        .bond-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bond-detail-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .bond-detail-value {
+            font-weight: 500;
+            color: #d1d5db;
+        }
+        
+        .order-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 0.75rem;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            background: #111827;
+            color: #f9fafb;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e3a8a;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(251, 191, 36, 0.1);
+            border-top: 3px solid #fbbf24;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .portfolio-summary {
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .portfolio-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .order-book {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .order-book-side {
+            background: #111827;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .order-book-header {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        
+        .order-book-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #374151;
+            font-size: 0.875rem;
+        }
+        
+        .order-book-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bids .order-book-item {
+            color: #10b981;
+        }
+        
+        .asks .order-book-item {
+            color: #ef4444;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online {
+            background: #10b981;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+        }
+        
+        .price-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .price-change.positive {
+            color: #10b981;
+        }
+        
+        .price-change.negative {
+            color: #ef4444;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                Bond Bazaar
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('market')">
+                    <i class="fas fa-chart-bar"></i>
+                    Market
+                </button>
+                <button class="nav-tab" onclick="showTab('trading')">
+                    <i class="fas fa-exchange-alt"></i>
+                    Trading
+                </button>
+                <button class="nav-tab" onclick="showTab('portfolio')">
+                    <i class="fas fa-briefcase"></i>
+                    Portfolio
+                </button>
+                <button class="nav-tab" onclick="showTab('orders')">
+                    <i class="fas fa-list"></i>
+                    Orders
+                </button>
+                <button class="nav-tab" onclick="showTab('sip')">
+                    <i class="fas fa-piggy-bank"></i>
+                    SIP
+                </button>
+                <button class="nav-tab" onclick="showTab('lending')">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    Lending
+                </button>
+            </div>
+            <div class="user-info">
+                <div class="balance">
+                    <i class="fas fa-wallet"></i>
+                    ₹<span id="userBalance">1,000,000</span>
+                </div>
+                <div class="status-indicator status-online"></div>
+                <span>Live</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Market Tab -->
+        <div id="market" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Market Overview
+                    </div>
+                    <div class="status-indicator status-online"></div>
+                </div>
+                <div id="marketOverview" class="loading">
+                    <div class="spinner"></div>
+                    Loading market data...
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-area"></i>
+                            Price Trends
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Market Distribution
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        Available Bonds
+                    </div>
+                    <div class="form-group" style="margin: 0; min-width: 200px;">
+                        <select id="categoryFilter" onchange="filterBonds()">
+                            <option value="">All Categories</option>
+                            <option value="Government">🏛️ Government</option>
+                            <option value="State">🏛️ State</option>
+                            <option value="Corporate">🏢 Corporate</option>
+                            <option value="Tax-free">💰 Tax-free</option>
+                            <option value="Infrastructure">🏗️ Infrastructure</option>
+                            <option value="Bank">🏦 Bank</option>
+                            <option value="NBFC">💼 NBFC</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="bondsList" class="bond-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading bonds...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Tab -->
+        <div id="trading" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-exchange-alt"></i>
+                            Place Order
+                        </div>
+                    </div>
+                    <form id="orderForm" class="order-form">
+                        <div class="form-group">
+                            <label for="bondSelect">Select Bond</label>
+                            <select id="bondSelect" required>
+                                <option value="">Select a bond...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderType">Order Type</label>
+                            <select id="orderType" required>
+                                <option value="BUY">Buy</option>
+                                <option value="SELL">Sell</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price (₹)</label>
+                            <input type="number" id="price" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Order Book
+                        </div>
+                    </div>
+                    <div class="order-book">
+                        <div class="order-book-side bids">
+                            <div class="order-book-header">Bids (Buy Orders)</div>
+                            <div class="order-book-item">
+                                <div>Price</div>
+                                <div>Quantity</div>
+                                <div>Total</div>
+                            </div>
+                            <div id="bidsList"></div>
+                        </div>
+                        <div class="order-book-side asks">
+                            <div class="order-book-header">Asks (Sell Orders)</div>
+                            <div class="order-book-item">
+                                <div>Price</div>
+                                <div>Quantity</div>
+                                <div>Total</div>
+                            </div>
+                            <div id="asksList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Tab -->
+        <div id="portfolio" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-briefcase"></i>
+                        Portfolio Overview
+                    </div>
+                </div>
+                <div id="portfolioInfo" class="loading">
+                    <div class="spinner"></div>
+                    Loading portfolio...
+                </div>
+                <div class="chart-container">
+                    <canvas id="portfolioChart"></canvas>
+                </div>
+                <button class="btn" onclick="loadPortfolio()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Portfolio
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        My Orders
+                    </div>
+                </div>
+                <div id="ordersList" class="loading">
+                    <div class="spinner"></div>
+                    Loading orders...
+                </div>
+                <button class="btn" onclick="loadOrders()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Orders
+                </button>
+            </div>
+        </div>
+
+        <!-- SIP Tab -->
+        <div id="sip" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-piggy-bank"></i>
+                            Create SIP
+                        </div>
+                    </div>
+                    <form id="sipForm" class="order-form">
+                        <div class="form-group">
+                            <label for="sipBondSelect">Select Bond</label>
+                            <select id="sipBondSelect" required>
+                                <option value="">Select a bond...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sipAmount">Monthly Amount (₹)</label>
+                            <input type="number" id="sipAmount" min="1000" step="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sipDuration">Duration (Months)</label>
+                            <select id="sipDuration" required>
+                                <option value="6">6 Months</option>
+                                <option value="12">12 Months</option>
+                                <option value="24">24 Months</option>
+                                <option value="36">36 Months</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sipStartDate">Start Date</label>
+                            <input type="date" id="sipStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="liquidityRecycling" checked>
+                                Enable Liquidity Recycling (20% buffer for early exits)
+                            </label>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-plus"></i>
+                            Create SIP
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            SIP Performance
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sipChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        My SIPs
+                    </div>
+                </div>
+                <div id="sipList" class="loading">
+                    <div class="spinner"></div>
+                    Loading SIPs...
+                </div>
+                <button class="btn" onclick="loadSIPs()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh SIPs
+                </button>
+            </div>
+        </div>
+
+        <!-- Lending Tab -->
+        <div id="lending" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            Lend Bonds
+                        </div>
+                    </div>
+                    <form id="lendingForm" class="order-form">
+                        <div class="form-group">
+                            <label for="lendingBondSelect">Select Bond to Lend</label>
+                            <select id="lendingBondSelect" required>
+                                <option value="">Select a bond...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lendingQuantity">Quantity</label>
+                            <input type="number" id="lendingQuantity" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lendingRate">Lending Rate (% p.a.)</label>
+                            <input type="number" id="lendingRate" step="0.01" min="0" max="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lendingDuration">Duration (Days)</label>
+                            <select id="lendingDuration" required>
+                                <option value="7">7 Days</option>
+                                <option value="14">14 Days</option>
+                                <option value="30">30 Days</option>
+                                <option value="90">90 Days</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="haircut">Haircut (%)</label>
+                            <input type="number" id="haircut" step="0.1" min="0" max="50" readonly>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            Create Lending Offer
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Lending Opportunities
+                        </div>
+                    </div>
+                    <div id="lendingOpportunities" class="loading">
+                        <div class="spinner"></div>
+                        Loading opportunities...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        My Lending Positions
+                    </div>
+                </div>
+                <div id="lendingPositions" class="loading">
+                    <div class="spinner"></div>
+                    Loading positions...
+                </div>
+                <button class="btn" onclick="loadLendingPositions()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Positions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const API_BASE = 'http://localhost:3001';
+        let bonds = [];
+        let portfolio = null;
+        let orders = [];
+        let priceChart = null;
+        let marketChart = null;
+        let portfolioChart = null;
+        let sipChart = null;
+        let isConnected = false;
+        let sips = [];
+        let lendingOffers = [];
+        let lendingPositions = [];
+
+        // Real Indian bond data from CSV
+        const realisticBonds = [
+            // Government Securities
+            {
+                id: 1,
+                name: "GOVERNMENT OF INDIA 6.95% 2061",
+                symbol: "G-Sec 6.95% 2061",
+                coupon: 6.95,
+                price: 97.76,
+                yield: 7.25,
+                maturity: "2061-12-01",
+                rating: "AAA",
+                issuer: "Government of India",
+                category: "Government",
+                volume: 5000000000,
+                change: 0.12,
+                changePercent: 0.12
+            },
+            {
+                id: 2,
+                name: "GOVERNMENT OF INDIA 7.25% 2063",
+                symbol: "G-Sec 7.25% 2063",
+                coupon: 7.25,
+                price: 101.73,
+                yield: 7.25,
+                maturity: "2063-06-01",
+                rating: "AAA",
+                issuer: "Government of India",
+                category: "Government",
+                volume: 4500000000,
+                change: -0.08,
+                changePercent: -0.08
+            },
+            {
+                id: 3,
+                name: "GOVERNMENT OF INDIA 7.09% 2074",
+                symbol: "G-Sec 7.09% 2074",
+                coupon: 7.09,
+                price: 100.16,
+                yield: 7.23,
+                maturity: "2074-11-01",
+                rating: "AAA",
+                issuer: "Government of India",
+                category: "Government",
+                volume: 4000000000,
+                change: 0.05,
+                changePercent: 0.05
+            },
+            {
+                id: 4,
+                name: "GOVERNMENT OF INDIA 7.46% 2073",
+                symbol: "G-Sec 7.46% 2073",
+                coupon: 7.46,
+                price: 106.03,
+                yield: 7.20,
+                maturity: "2073-11-01",
+                rating: "AAA",
+                issuer: "Government of India",
+                category: "Government",
+                volume: 3800000000,
+                change: 0.15,
+                changePercent: 0.14
+            },
+            {
+                id: 5,
+                name: "GOVERNMENT OF INDIA 7.09% 2054",
+                symbol: "G-Sec 7.09% 2054",
+                coupon: 7.09,
+                price: 99.57,
+                yield: 7.18,
+                maturity: "2054-08-01",
+                rating: "AAA",
+                issuer: "Government of India",
+                category: "Government",
+                volume: 3500000000,
+                change: -0.03,
+                changePercent: -0.03
+            },
+            // State Development Loans
+            {
+                id: 6,
+                name: "GOA 7.62% 2032",
+                symbol: "GOA 7.62% 2032",
+                coupon: 7.62,
+                price: 104.69,
+                yield: 7.05,
+                maturity: "2032-12-01",
+                rating: "AAA",
+                issuer: "Goa",
+                category: "State",
+                volume: 2000000000,
+                change: 0.08,
+                changePercent: 0.08
+            },
+            {
+                id: 7,
+                name: "KARNATAKA 7.65% 2034",
+                symbol: "KARNATAKA 7.65% 2034",
+                coupon: 7.65,
+                price: 105.68,
+                yield: 7.03,
+                maturity: "2034-12-01",
+                rating: "AAA",
+                issuer: "Karnataka",
+                category: "State",
+                volume: 2200000000,
+                change: 0.06,
+                changePercent: 0.06
+            },
+            {
+                id: 8,
+                name: "TAMIL NADU 7.57% 2033",
+                symbol: "TAMIL NADU 7.57% 2033",
+                coupon: 7.57,
+                price: 104.38,
+                yield: 7.01,
+                maturity: "2033-01-01",
+                rating: "AAA",
+                issuer: "Tamil Nadu",
+                category: "State",
+                volume: 2100000000,
+                change: 0.04,
+                changePercent: 0.04
+            },
+            // Corporate Bonds
+            {
+                id: 9,
+                name: "TATA CAPITAL LIMITED 8.65% 2029",
+                symbol: "TATA CAP 8.65% 2029",
+                coupon: 8.65,
+                price: 1105.10,
+                yield: 7.65,
+                maturity: "2029-11-01",
+                rating: "AA+",
+                issuer: "Tata Capital Limited",
+                category: "Corporate",
+                volume: 1500000000,
+                change: 0.18,
+                changePercent: 0.16
+            },
+            {
+                id: 10,
+                name: "L&T FINANCE LIMITED 8.10% 2030",
+                symbol: "L&T FIN 8.10% 2030",
+                coupon: 8.10,
+                price: 1042.59,
+                yield: 7.40,
+                maturity: "2030-06-01",
+                rating: "AA+",
+                issuer: "L&T Finance Limited",
+                category: "Corporate",
+                volume: 1200000000,
+                change: 0.22,
+                changePercent: 0.21
+            },
+            // Tax-free Bonds
+            {
+                id: 11,
+                name: "INDIAN RAILWAY FINANCE CORPORATION LIMITED 8.10% 2027",
+                symbol: "IRFC 8.10% 2027",
+                coupon: 8.10,
+                price: 1109.19,
+                yield: 6.50,
+                maturity: "2027-02-01",
+                rating: "AAA",
+                issuer: "Indian Railway Finance Corporation Limited",
+                category: "Tax-free",
+                volume: 3000000000,
+                change: 0.25,
+                changePercent: 0.23
+            },
+            {
+                id: 12,
+                name: "POWER FINANCE CORPORATION LIMITED 8.79% 2028",
+                symbol: "PFC 8.79% 2028",
+                coupon: 8.79,
+                price: 1162.69,
+                yield: 6.75,
+                maturity: "2028-11-01",
+                rating: "AAA",
+                issuer: "Power Finance Corporation Limited",
+                category: "Tax-free",
+                volume: 2500000000,
+                change: 0.18,
+                changePercent: 0.16
+            },
+            // Infrastructure Bonds
+            {
+                id: 13,
+                name: "NATIONAL HIGHWAYS AUTHORITY OF INDIA 7.05% 2041",
+                symbol: "NHAI 7.05% 2041",
+                coupon: 7.05,
+                price: 1068.15,
+                yield: 7.03,
+                maturity: "2041-09-01",
+                rating: "AAA",
+                issuer: "National Highways Authority of India",
+                category: "Infrastructure",
+                volume: 4000000000,
+                change: 0.10,
+                changePercent: 0.09
+            },
+            {
+                id: 14,
+                name: "RURAL ELECTRIFICATION CORPORATION LIMITED 8.56% 2028",
+                symbol: "REC 8.56% 2028",
+                coupon: 8.56,
+                price: 1077.85,
+                yield: 7.20,
+                maturity: "2028-11-01",
+                rating: "AAA",
+                issuer: "Rural Electrification Corporation Limited",
+                category: "Infrastructure",
+                volume: 3500000000,
+                change: 0.14,
+                changePercent: 0.13
+            },
+            // Small Finance Banks
+            {
+                id: 15,
+                name: "ESAF SMALL FINANCE BANK LIMITED 11.30% 2031",
+                symbol: "ESAF SFB 11.30% 2031",
+                coupon: 11.30,
+                price: 999.70,
+                yield: 12.00,
+                maturity: "2031-05-01",
+                rating: "A+",
+                issuer: "ESAF Small Finance Bank Limited",
+                category: "Bank",
+                volume: 500000000,
+                change: 0.35,
+                changePercent: 0.35
+            }
+        ];
+
+        // Bond categories for filtering
+        const bondCategories = {
+            "Government": { color: "#10b981", icon: "🏛️" },
+            "State": { color: "#3b82f6", icon: "🏛️" },
+            "Corporate": { color: "#f59e0b", icon: "🏢" },
+            "Tax-free": { color: "#8b5cf6", icon: "💰" },
+            "Infrastructure": { color: "#06b6d4", icon: "🏗️" },
+            "Bank": { color: "#ef4444", icon: "🏦" },
+            "NBFC": { color: "#f97316", icon: "💼" }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadBonds();
+            loadPortfolio();
+            loadOrders();
+            loadMarketOverview();
+            loadSIPs();
+            loadLendingPositions();
+            loadLendingOpportunities();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadMarketOverview, 30000);
+            setInterval(loadPortfolio, 60000);
+            setInterval(loadSIPs, 120000);
+            setInterval(loadLendingPositions, 120000);
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for the tab
+            if (tabName === 'trading') {
+                loadOrderBook();
+            } else if (tabName === 'sip') {
+                loadSIPs();
+                initSIPChart();
+            } else if (tabName === 'lending') {
+                loadLendingPositions();
+                loadLendingOpportunities();
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            setTimeout(() => {
+                initPriceChart();
+                initMarketChart();
+                initPortfolioChart();
+                initSIPChart();
+            }, 100);
+        }
+
+        // Initialize price chart
+        function initPriceChart() {
+            const ctx = document.getElementById('priceChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic price data for the last 30 days
+            const labels = [];
+            const prices = [];
+            const volumes = [];
+            
+            let basePrice = 98.5;
+            for(let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                // Generate realistic price movement
+                const trend = Math.sin(i / 10) * 0.5;
+                const volatility = (Math.random() - 0.5) * 0.3;
+                const price = basePrice + trend + volatility;
+                prices.push(price);
+                
+                // Generate realistic volume
+                const volume = Math.random() * 2000000 + 500000;
+                volumes.push(volume);
+                
+                basePrice = price;
+            }
+            
+            priceChart = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bond Price (₹)',
+                        data: prices,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y',
+                        fill: true
+                    }, {
+                        label: 'Volume (₹)',
+                        data: volumes,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + value.toFixed(2)
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + (value / 1000000).toFixed(1) + 'M'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize market chart
+        function initMarketChart() {
+            const ctx = document.getElementById('marketChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic market distribution data
+            const labels = ['Government Bonds', 'Corporate Bonds', 'Municipal Bonds', 'Treasury Bills'];
+            const values = [45, 30, 15, 10];
+            const colors = ['#fbbf24', '#10b981', '#3b82f6', '#ef4444'];
+            
+            marketChart = new Chart(chartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#d1d5db',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize portfolio chart
+        function initPortfolioChart() {
+            const ctx = document.getElementById('portfolioChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic portfolio data
+            const labels = ['Bonds', 'Cash', 'Total Value'];
+            const values = [750000, 250000, 1000000];
+            const colors = ['#fbbf24', '#10b981', '#3b82f6'];
+            
+            portfolioChart = new Chart(chartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#d1d5db',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize SIP chart
+        function initSIPChart() {
+            const ctx = document.getElementById('sipChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic SIP performance data
+            const labels = [];
+            const invested = [];
+            const currentValue = [];
+            
+            for(let i = 11; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+                
+                const monthlyInvestment = 10000;
+                const totalInvested = monthlyInvestment * (12 - i);
+                invested.push(totalInvested);
+                
+                // Simulate growth with some volatility
+                const growth = 1 + (Math.random() * 0.1 - 0.05) + (12 - i) * 0.02;
+                currentValue.push(totalInvested * growth);
+            }
+            
+            sipChart = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invested Amount',
+                        data: invested,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.4,
+                        fill: false
+                    }, {
+                        label: 'Current Value',
+                        data: currentValue,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + (value / 1000).toFixed(0) + 'K'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load bonds
+        async function loadBonds() {
+            try {
+                // Use realistic data for now
+                bonds = realisticBonds;
+                displayBonds();
+                populateBondSelect();
+            } catch (error) {
+                console.error('Error loading bonds:', error);
+                document.getElementById('bondsList').innerHTML = `
+                    <div class="error">Failed to load bonds. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display bonds
+        function displayBonds(filteredBonds = null) {
+            const bondsList = document.getElementById('bondsList');
+            const bondsToShow = filteredBonds || bonds;
+            
+            if (bondsToShow.length === 0) {
+                bondsList.innerHTML = '<div class="error">No bonds available</div>';
+                return;
+            }
+            
+            bondsList.innerHTML = bondsToShow.map(bond => `
+                <div class="bond-item" onclick="selectBond(${bond.id})">
+                    <div class="bond-header">
+                        <div class="bond-name">
+                            <span class="bond-category" style="color: ${bondCategories[bond.category]?.color || '#6b7280'};">
+                                ${bondCategories[bond.category]?.icon || '📄'} ${bond.category}
+                            </span>
+                            <br>
+                            <strong>${bond.name}</strong>
+                        </div>
+                        <div class="bond-price">₹${bond.price.toFixed(2)}</div>
+                    </div>
+                    <div class="bond-details">
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Coupon</div>
+                            <div class="bond-detail-value">${bond.coupon}%</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Yield</div>
+                            <div class="bond-detail-value">${bond.yield}%</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Maturity</div>
+                            <div class="bond-detail-value">${bond.maturity}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Rating</div>
+                            <div class="bond-detail-value">${bond.rating}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Issuer</div>
+                            <div class="bond-detail-value">${bond.issuer}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Volume</div>
+                            <div class="bond-detail-value">₹${(bond.volume / 1000000).toFixed(1)}M</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Change</div>
+                            <div class="bond-detail-value price-change ${bond.change >= 0 ? 'positive' : 'negative'}">
+                                ${bond.change >= 0 ? '+' : ''}${bond.change.toFixed(2)} (${bond.changePercent.toFixed(2)}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter bonds by category
+        function filterBonds() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const selectedCategory = categoryFilter.value;
+            
+            if (!selectedCategory) {
+                displayBonds();
+                return;
+            }
+            
+            const filteredBonds = bonds.filter(bond => bond.category === selectedCategory);
+            displayBonds(filteredBonds);
+        }
+
+        // Select bond for trading
+        function selectBond(bondId) {
+            const bond = bonds.find(b => b.id === bondId);
+            if (bond) {
+                document.getElementById('bondSelect').value = bondId;
+                document.getElementById('price').value = bond.price.toFixed(2);
+            }
+        }
+
+        // Populate bond select
+        function populateBondSelect() {
+            const bondSelect = document.getElementById('bondSelect');
+            bondSelect.innerHTML = '<option value="">Select a bond...</option>' +
+                bonds.map(bond => `
+                    <option value="${bond.id}" data-price="${bond.price}">
+                        ${bond.symbol} - ₹${bond.price.toFixed(2)}
+                    </option>
+                `).join('');
+        }
+
+        // Load market overview
+        async function loadMarketOverview() {
+            try {
+                // Use realistic data for now
+                const data = realisticBonds;
+                displayMarketOverview(data);
+            } catch (error) {
+                console.error('Error loading market overview:', error);
+                document.getElementById('marketOverview').innerHTML = `
+                    <div class="error">Failed to load market data. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display market overview
+        function displayMarketOverview(data) {
+            const marketOverview = document.getElementById('marketOverview');
+            
+            if (!data || data.length === 0) {
+                marketOverview.innerHTML = '<div class="error">No market data available</div>';
+                return;
+            }
+            
+            const totalBonds = data.length;
+            const avgPrice = data.reduce((sum, bond) => sum + bond.price, 0) / totalBonds;
+            const totalVolume = data.reduce((sum, bond) => sum + bond.volume, 0);
+            const positiveBonds = data.filter(bond => bond.change >= 0).length;
+            
+            marketOverview.innerHTML = `
+                <div class="market-overview">
+                    <div class="metric">
+                        <div class="metric-value">${totalBonds}</div>
+                        <div class="metric-label">Active Bonds</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">₹${avgPrice.toFixed(2)}</div>
+                        <div class="metric-label">Average Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">₹${(totalVolume / 1000000000).toFixed(1)}B</div>
+                        <div class="metric-label">Total Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value positive">${positiveBonds}/${totalBonds}</div>
+                        <div class="metric-label">Gainers</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load portfolio
+        async function loadPortfolio() {
+            try {
+                // Use realistic portfolio data
+                portfolio = {
+                    cash: 250000,
+                    totalValue: 1000000,
+                    positions: [
+                        { bond: 'G-Sec 7.26% 2029', quantity: 1000, value: 750000 }
+                    ],
+                    totalReturn: 5.2
+                };
+                displayPortfolio();
+            } catch (error) {
+                console.error('Error loading portfolio:', error);
+                document.getElementById('portfolioInfo').innerHTML = `
+                    <div class="error">Failed to load portfolio. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display portfolio
+        function displayPortfolio() {
+            const portfolioInfo = document.getElementById('portfolioInfo');
+            
+            if (!portfolio) {
+                portfolioInfo.innerHTML = '<div class="error">No portfolio data available</div>';
+                return;
+            }
+            
+            portfolioInfo.innerHTML = `
+                <div class="portfolio-summary">
+                    <h4>Portfolio Summary</h4>
+                    <div class="portfolio-stats">
+                        <div class="stat">
+                            <div class="stat-value">₹${portfolio.cash.toLocaleString()}</div>
+                            <div class="stat-label">Cash Balance</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">₹${portfolio.totalValue.toLocaleString()}</div>
+                            <div class="stat-label">Total Value</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${portfolio.positions.length}</div>
+                            <div class="stat-label">Positions</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value positive">+${portfolio.totalReturn.toFixed(1)}%</div>
+                            <div class="stat-label">Total Return</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load orders
+        async function loadOrders() {
+            try {
+                // Use realistic order data
+                orders = [
+                    {
+                        id: 1,
+                        bondName: 'G-Sec 7.26% 2029',
+                        side: 'BUY',
+                        quantity: 100,
+                        price: 98.45,
+                        status: 'FILLED',
+                        createdAt: new Date(Date.now() - 3600000)
+                    },
+                    {
+                        id: 2,
+                        bondName: 'SBI 6.85% 2027',
+                        side: 'SELL',
+                        quantity: 50,
+                        price: 97.82,
+                        status: 'PENDING',
+                        createdAt: new Date(Date.now() - 1800000)
+                    }
+                ];
+                displayOrders();
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('ordersList').innerHTML = `
+                    <div class="error">Failed to load orders. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display orders
+        function displayOrders() {
+            const ordersList = document.getElementById('ordersList');
+            
+            if (!orders || orders.length === 0) {
+                ordersList.innerHTML = '<div class="error">No orders found</div>';
+                return;
+            }
+            
+            ordersList.innerHTML = orders.map(order => `
+                <div class="bond-item">
+                    <div class="bond-header">
+                        <div class="bond-name">${order.bondName}</div>
+                        <div class="bond-price">${order.side} ${order.quantity} @ ₹${order.price}</div>
+                    </div>
+                    <div class="bond-details">
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Status</div>
+                            <div class="bond-detail-value">${order.status}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Type</div>
+                            <div class="bond-detail-value">${order.side}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Created</div>
+                            <div class="bond-detail-value">${order.createdAt.toLocaleString()}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Total</div>
+                            <div class="bond-detail-value">₹${(order.quantity * order.price).toLocaleString()}</div>
+                        </div>
+                        ${order.status === 'PENDING' ? `
+                            <div class="bond-detail">
+                                <button class="btn btn-danger" onclick="cancelOrder(${order.id})">
+                                    <i class="fas fa-times"></i>
+                                    Cancel
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load order book
+        async function loadOrderBook() {
+            // Generate realistic order book data
+            const bids = [];
+            const asks = [];
+            
+            let basePrice = 98.5;
+            for (let i = 0; i < 5; i++) {
+                bids.push({
+                    price: (basePrice - (i + 1) * 0.05).toFixed(2),
+                    quantity: Math.floor(Math.random() * 100) + 10,
+                    total: 0
+                });
+                
+                asks.push({
+                    price: (basePrice + (i + 1) * 0.05).toFixed(2),
+                    quantity: Math.floor(Math.random() * 100) + 10,
+                    total: 0
+                });
+            }
+            
+            // Calculate totals
+            bids.forEach(bid => {
+                bid.total = (bid.price * bid.quantity).toFixed(2);
+            });
+            asks.forEach(ask => {
+                ask.total = (ask.price * ask.quantity).toFixed(2);
+            });
+            
+            // Display order book
+            document.getElementById('bidsList').innerHTML = bids.map(bid => `
+                <div class="order-book-item">
+                    <div>₹${bid.price}</div>
+                    <div>${bid.quantity}</div>
+                    <div>₹${bid.total}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('asksList').innerHTML = asks.map(ask => `
+                <div class="order-book-item">
+                    <div>₹${ask.price}</div>
+                    <div>${ask.quantity}</div>
+                    <div>₹${ask.total}</div>
+                </div>
+            `).join('');
+        }
+
+        // Order form submission
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bondSelect = document.getElementById('bondSelect');
+            const orderType = document.getElementById('orderType').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const price = parseFloat(document.getElementById('price').value);
+            
+            if (!bondSelect.value) {
+                alert('Please select a bond');
+                return;
+            }
+            
+            const bond = bonds.find(b => b.id == bondSelect.value);
+            if (!bond) {
+                alert('Invalid bond selected');
+                return;
+            }
+            
+            // Create new order
+            const newOrder = {
+                id: orders.length + 1,
+                bondName: bond.symbol,
+                side: orderType,
+                quantity: quantity,
+                price: price,
+                status: 'PENDING',
+                createdAt: new Date()
+            };
+            
+            orders.unshift(newOrder);
+            displayOrders();
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `Order placed successfully! Order ID: ${newOrder.id}`;
+            document.getElementById('orderForm').appendChild(successDiv);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+            
+            // Reset form
+            document.getElementById('orderForm').reset();
+        });
+
+        // Update price when bond is selected
+        document.getElementById('bondSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.dataset.price) {
+                document.getElementById('price').value = selectedOption.dataset.price;
+            }
+        });
+
+        // Cancel order
+        function cancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order?')) {
+                const orderIndex = orders.findIndex(order => order.id === orderId);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].status = 'CANCELLED';
+                    displayOrders();
+                }
+            }
+        }
+
+        // Load SIPs
+        async function loadSIPs() {
+            try {
+                // Use realistic SIP data
+                sips = [
+                    {
+                        id: 1,
+                        bondName: 'G-Sec 7.26% 2029',
+                        monthlyAmount: 10000,
+                        duration: 12,
+                        startDate: '2024-01-01',
+                        status: 'ACTIVE',
+                        totalInvested: 100000,
+                        currentValue: 105000,
+                        liquidityRecycling: true
+                    },
+                    {
+                        id: 2,
+                        bondName: 'SBI 6.85% 2027',
+                        monthlyAmount: 5000,
+                        duration: 24,
+                        startDate: '2024-03-01',
+                        status: 'ACTIVE',
+                        totalInvested: 50000,
+                        currentValue: 52000,
+                        liquidityRecycling: false
+                    }
+                ];
+                displaySIPs();
+                populateSIPBondSelect();
+            } catch (error) {
+                console.error('Error loading SIPs:', error);
+                document.getElementById('sipList').innerHTML = `
+                    <div class="error">Failed to load SIPs. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display SIPs
+        function displaySIPs() {
+            const sipList = document.getElementById('sipList');
+            
+            if (!sips || sips.length === 0) {
+                sipList.innerHTML = '<div class="error">No SIPs found</div>';
+                return;
+            }
+            
+            sipList.innerHTML = sips.map(sip => `
+                <div class="bond-item">
+                    <div class="bond-header">
+                        <div class="bond-name">${sip.bondName}</div>
+                        <div class="bond-price">₹${sip.monthlyAmount.toLocaleString()}/month</div>
+                    </div>
+                    <div class="bond-details">
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Duration</div>
+                            <div class="bond-detail-value">${sip.duration} months</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Status</div>
+                            <div class="bond-detail-value">${sip.status}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Invested</div>
+                            <div class="bond-detail-value">₹${sip.totalInvested.toLocaleString()}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Current Value</div>
+                            <div class="bond-detail-value positive">₹${sip.currentValue.toLocaleString()}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Liquidity Recycling</div>
+                            <div class="bond-detail-value">${sip.liquidityRecycling ? 'Enabled' : 'Disabled'}</div>
+                        </div>
+                        ${sip.status === 'ACTIVE' ? `
+                            <div class="bond-detail">
+                                <button class="btn btn-danger" onclick="stopSIP(${sip.id})">
+                                    <i class="fas fa-stop"></i>
+                                    Stop SIP
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Populate SIP bond select
+        function populateSIPBondSelect() {
+            const sipBondSelect = document.getElementById('sipBondSelect');
+            sipBondSelect.innerHTML = '<option value="">Select a bond...</option>' +
+                bonds.map(bond => `
+                    <option value="${bond.id}">
+                        ${bond.symbol} - ₹${bond.price.toFixed(2)}
+                    </option>
+                `).join('');
+        }
+
+        // Load lending positions
+        async function loadLendingPositions() {
+            try {
+                // Use realistic lending position data
+                lendingPositions = [
+                    {
+                        id: 1,
+                        bondName: 'G-Sec 7.26% 2029',
+                        quantity: 100,
+                        rate: 6.5,
+                        duration: 30,
+                        startDate: '2024-01-15',
+                        status: 'ACTIVE',
+                        collateral: 105000,
+                        haircut: 5.0
+                    }
+                ];
+                displayLendingPositions();
+                populateLendingBondSelect();
+            } catch (error) {
+                console.error('Error loading lending positions:', error);
+                document.getElementById('lendingPositions').innerHTML = `
+                    <div class="error">Failed to load lending positions. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display lending positions
+        function displayLendingPositions() {
+            const lendingPositionsEl = document.getElementById('lendingPositions');
+            
+            if (!lendingPositions || lendingPositions.length === 0) {
+                lendingPositionsEl.innerHTML = '<div class="error">No lending positions found</div>';
+                return;
+            }
+            
+            lendingPositionsEl.innerHTML = lendingPositions.map(position => `
+                <div class="bond-item">
+                    <div class="bond-header">
+                        <div class="bond-name">${position.bondName}</div>
+                        <div class="bond-price">${position.quantity} units @ ${position.rate}%</div>
+                    </div>
+                    <div class="bond-details">
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Duration</div>
+                            <div class="bond-detail-value">${position.duration} days</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Status</div>
+                            <div class="bond-detail-value">${position.status}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Collateral</div>
+                            <div class="bond-detail-value">₹${position.collateral.toLocaleString()}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Haircut</div>
+                            <div class="bond-detail-value">${position.haircut}%</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Start Date</div>
+                            <div class="bond-detail-value">${position.startDate}</div>
+                        </div>
+                        ${position.status === 'ACTIVE' ? `
+                            <div class="bond-detail">
+                                <button class="btn btn-danger" onclick="closeLendingPosition(${position.id})">
+                                    <i class="fas fa-times"></i>
+                                    Close Position
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Populate lending bond select
+        function populateLendingBondSelect() {
+            const lendingBondSelect = document.getElementById('lendingBondSelect');
+            lendingBondSelect.innerHTML = '<option value="">Select a bond...</option>' +
+                bonds.map(bond => `
+                    <option value="${bond.id}" data-rating="${bond.rating}">
+                        ${bond.symbol} - ₹${bond.price.toFixed(2)} (${bond.rating})
+                    </option>
+                `).join('');
+        }
+
+        // Load lending opportunities
+        async function loadLendingOpportunities() {
+            try {
+                // Use realistic lending opportunity data
+                lendingOffers = [
+                    {
+                        id: 1,
+                        bondName: 'RIL 7.15% 2030',
+                        quantity: 200,
+                        rate: 7.2,
+                        duration: 14,
+                        rating: 'AA',
+                        haircut: 8.0
+                    },
+                    {
+                        id: 2,
+                        bondName: 'TML 8.25% 2028',
+                        quantity: 150,
+                        rate: 8.5,
+                        duration: 30,
+                        rating: 'A+',
+                        haircut: 12.0
+                    }
+                ];
+                displayLendingOpportunities();
+            } catch (error) {
+                console.error('Error loading lending opportunities:', error);
+                document.getElementById('lendingOpportunities').innerHTML = `
+                    <div class="error">Failed to load lending opportunities. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display lending opportunities
+        function displayLendingOpportunities() {
+            const lendingOpportunitiesEl = document.getElementById('lendingOpportunities');
+            
+            if (!lendingOffers || lendingOffers.length === 0) {
+                lendingOpportunitiesEl.innerHTML = '<div class="error">No lending opportunities available</div>';
+                return;
+            }
+            
+            lendingOpportunitiesEl.innerHTML = lendingOffers.map(offer => `
+                <div class="bond-item">
+                    <div class="bond-header">
+                        <div class="bond-name">${offer.bondName}</div>
+                        <div class="bond-price">${offer.quantity} units @ ${offer.rate}%</div>
+                    </div>
+                    <div class="bond-details">
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Duration</div>
+                            <div class="bond-detail-value">${offer.duration} days</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Rating</div>
+                            <div class="bond-detail-value">${offer.rating}</div>
+                        </div>
+                        <div class="bond-detail">
+                            <div class="bond-detail-label">Haircut</div>
+                            <div class="bond-detail-value">${offer.haircut}%</div>
+                        </div>
+                        <div class="bond-detail">
+                            <button class="btn btn-success" onclick="acceptLendingOffer(${offer.id})">
+                                <i class="fas fa-handshake"></i>
+                                Accept Offer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // SIP form submission
+        document.getElementById('sipForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bondSelect = document.getElementById('sipBondSelect');
+            const amount = parseInt(document.getElementById('sipAmount').value);
+            const duration = parseInt(document.getElementById('sipDuration').value);
+            const startDate = document.getElementById('sipStartDate').value;
+            const liquidityRecycling = document.getElementById('liquidityRecycling').checked;
+            
+            if (!bondSelect.value) {
+                alert('Please select a bond');
+                return;
+            }
+            
+            const bond = bonds.find(b => b.id == bondSelect.value);
+            if (!bond) {
+                alert('Invalid bond selected');
+                return;
+            }
+            
+            // Create new SIP
+            const newSIP = {
+                id: sips.length + 1,
+                bondName: bond.symbol,
+                monthlyAmount: amount,
+                duration: duration,
+                startDate: startDate,
+                status: 'ACTIVE',
+                totalInvested: 0,
+                currentValue: 0,
+                liquidityRecycling: liquidityRecycling
+            };
+            
+            sips.unshift(newSIP);
+            displaySIPs();
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `SIP created successfully! SIP ID: ${newSIP.id}`;
+            document.getElementById('sipForm').appendChild(successDiv);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+            
+            // Reset form
+            document.getElementById('sipForm').reset();
+        });
+
+        // Lending form submission
+        document.getElementById('lendingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bondSelect = document.getElementById('lendingBondSelect');
+            const quantity = parseInt(document.getElementById('lendingQuantity').value);
+            const rate = parseFloat(document.getElementById('lendingRate').value);
+            const duration = parseInt(document.getElementById('lendingDuration').value);
+            
+            if (!bondSelect.value) {
+                alert('Please select a bond');
+                return;
+            }
+            
+            const bond = bonds.find(b => b.id == bondSelect.value);
+            if (!bond) {
+                alert('Invalid bond selected');
+                return;
+            }
+            
+            // Create new lending position
+            const newPosition = {
+                id: lendingPositions.length + 1,
+                bondName: bond.symbol,
+                quantity: quantity,
+                rate: rate,
+                duration: duration,
+                startDate: new Date().toISOString().split('T')[0],
+                status: 'ACTIVE',
+                collateral: quantity * bond.price * (1 + parseFloat(document.getElementById('haircut').value) / 100),
+                haircut: parseFloat(document.getElementById('haircut').value)
+            };
+            
+            lendingPositions.unshift(newPosition);
+            displayLendingPositions();
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `Lending position created successfully! Position ID: ${newPosition.id}`;
+            document.getElementById('lendingForm').appendChild(successDiv);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+            
+            // Reset form
+            document.getElementById('lendingForm').reset();
+        });
+
+        // Update haircut based on bond rating
+        document.getElementById('lendingBondSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const rating = selectedOption.dataset.rating;
+            
+            let haircut = 0;
+            switch(rating) {
+                case 'AAA': haircut = 2.0; break;
+                case 'AA+': haircut = 3.0; break;
+                case 'AA': haircut = 5.0; break;
+                case 'A+': haircut = 8.0; break;
+                case 'A': haircut = 12.0; break;
+                default: haircut = 15.0; break;
+            }
+            
+            document.getElementById('haircut').value = haircut;
+        });
+
+        // Set default start date for SIP
+        document.getElementById('sipStartDate').value = new Date().toISOString().split('T')[0];
+
+        // Stop SIP
+        function stopSIP(sipId) {
+            if (confirm('Are you sure you want to stop this SIP?')) {
+                const sipIndex = sips.findIndex(sip => sip.id === sipId);
+                if (sipIndex !== -1) {
+                    sips[sipIndex].status = 'STOPPED';
+                    displaySIPs();
+                }
+            }
+        }
+
+        // Close lending position
+        function closeLendingPosition(positionId) {
+            if (confirm('Are you sure you want to close this lending position?')) {
+                const positionIndex = lendingPositions.findIndex(pos => pos.id === positionId);
+                if (positionIndex !== -1) {
+                    lendingPositions[positionIndex].status = 'CLOSED';
+                    displayLendingPositions();
+                }
+            }
+        }
+
+        // Accept lending offer
+        function acceptLendingOffer(offerId) {
+            if (confirm('Are you sure you want to accept this lending offer?')) {
+                const offer = lendingOffers.find(o => o.id === offerId);
+                if (offer) {
+                    // Create new lending position from offer
+                    const newPosition = {
+                        id: lendingPositions.length + 1,
+                        bondName: offer.bondName,
+                        quantity: offer.quantity,
+                        rate: offer.rate,
+                        duration: offer.duration,
+                        startDate: new Date().toISOString().split('T')[0],
+                        status: 'ACTIVE',
+                        collateral: offer.quantity * 100 * (1 + offer.haircut / 100), // Assuming ₹100 per unit
+                        haircut: offer.haircut
+                    };
+                    
+                    lendingPositions.unshift(newPosition);
+                    displayLendingPositions();
+                    
+                    // Remove offer from opportunities
+                    lendingOffers = lendingOffers.filter(o => o.id !== offerId);
+                    displayLendingOpportunities();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

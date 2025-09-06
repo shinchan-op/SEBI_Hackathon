@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bond Xchange - Market Operations</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .logo i {
+            color: #fbbf24;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: #fbbf24;
+            color: #1e3a8a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online {
+            background: #10b981;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-title i {
+            color: #fbbf24;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric {
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        .positive {
+            color: #10b981;
+        }
+        
+        .negative {
+            color: #ef4444;
+        }
+        
+        .neutral {
+            color: #6b7280;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .table th, .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .table th {
+            background: #111827;
+            color: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .table tr:hover {
+            background: #111827;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: rgba(245, 193, 39, 0.2);
+            color: #f5c13b;
+        }
+        
+        .status-filled {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .status-platinum {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8b5cf6;
+        }
+        
+        .status-gold {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        
+        .status-silver {
+            background: rgba(107, 114, 128, 0.2);
+            color: #6b7280;
+        }
+        
+        .status-bronze {
+            background: rgba(205, 127, 50, 0.2);
+            color: #cd7f32;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e3a8a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(251, 191, 36, 0.1);
+            border-top: 3px solid #fbbf24;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 0.75rem;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            background: #111827;
+            color: #f9fafb;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-building"></i>
+                Bond Xchange
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </button>
+                <button class="nav-tab" onclick="showTab('market-maker')">
+                    <i class="fas fa-chart-line"></i>
+                    Market Maker
+                </button>
+                <button class="nav-tab" onclick="showTab('orders')">
+                    <i class="fas fa-list"></i>
+                    Orders
+                </button>
+                <button class="nav-tab" onclick="showTab('analytics')">
+                    <i class="fas fa-chart-bar"></i>
+                    Analytics
+                </button>
+                <button class="nav-tab" onclick="showTab('market-makers')">
+                    <i class="fas fa-users"></i>
+                    Market Makers
+                </button>
+                <button class="nav-tab" onclick="showTab('admin')">
+                    <i class="fas fa-cog"></i>
+                    Admin
+                </button>
+            </div>
+            <div class="system-status">
+                <div class="status-indicator status-online"></div>
+                <span>System Online</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value positive">₹2.4B</div>
+                    <div class="metric-label">Total Volume</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">1,247</div>
+                    <div class="metric-label">Active Orders</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">15</div>
+                    <div class="metric-label">Market Makers</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value positive">99.9%</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-line"></i>
+                            Market Performance
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="marketPerformanceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Order Flow
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="orderFlowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Maker Tab -->
+        <div id="market-maker" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Market Maker Performance
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mmPerformanceChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Market Maker Statistics
+                    </div>
+                </div>
+                <div id="mmStats" class="loading">
+                    <div class="spinner"></div>
+                    Loading market maker data...
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        All Orders
+                    </div>
+                </div>
+                <div id="ordersTable" class="loading">
+                    <div class="spinner"></div>
+                    Loading orders...
+                </div>
+                <button class="btn" onclick="loadOrders()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Orders
+                </button>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-area"></i>
+                            Price Analysis
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priceAnalysisChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Volume Analysis
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="volumeAnalysisChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Risk Metrics
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskMetricsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Makers Tab -->
+        <div id="market-makers" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-users"></i>
+                        Market Maker Tiers & Performance
+                    </div>
+                </div>
+                <div id="marketMakerTiers" class="loading">
+                    <div class="spinner"></div>
+                    Loading market maker data...
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Tier Distribution
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tierDistributionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Performance Metrics
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceMetricsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list"></i>
+                        Market Maker List
+                    </div>
+                </div>
+                <div id="marketMakerList" class="loading">
+                    <div class="spinner"></div>
+                    Loading market makers...
+                </div>
+                <button class="btn" onclick="loadMarketMakers()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Market Makers
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Tab -->
+        <div id="admin" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-cog"></i>
+                            System Configuration
+                        </div>
+                    </div>
+                    <form id="systemConfigForm">
+                        <div class="form-group">
+                            <label for="tradingHours">Trading Hours</label>
+                            <input type="text" id="tradingHours" value="09:00 - 17:00" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="minOrderSize">Minimum Order Size (₹)</label>
+                            <input type="number" id="minOrderSize" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxOrderSize">Maximum Order Size (₹)</label>
+                            <input type="number" id="maxOrderSize" value="10000000">
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-save"></i>
+                            Update Configuration
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-tools"></i>
+                            System Actions
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn" onclick="refreshMarketData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Market Data
+                        </button>
+                        <button class="btn" onclick="clearOldOrders()">
+                            <i class="fas fa-trash"></i>
+                            Clear Old Orders
+                        </button>
+                        <button class="btn btn-danger" onclick="emergencyStop()">
+                            <i class="fas fa-stop"></i>
+                            Emergency Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const API_BASE = 'http://localhost:3001';
+        let charts = {};
+        let isConnected = false;
+        let marketMakers = [];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadDashboardData();
+            loadMarketMakerData();
+            loadOrders();
+            loadAnalytics();
+            loadMarketMakers();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboardData, 30000);
+            setInterval(loadOrders, 60000);
+            setInterval(loadMarketMakers, 120000);
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for the tab
+            if (tabName === 'analytics') {
+                loadAnalytics();
+            } else if (tabName === 'market-maker') {
+                loadMarketMakerData();
+            } else if (tabName === 'market-makers') {
+                loadMarketMakers();
+                initTierDistributionChart();
+                initPerformanceMetricsChart();
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            setTimeout(() => {
+                initMarketPerformanceChart();
+                initOrderFlowChart();
+                initMMPerformanceChart();
+                initPriceAnalysisChart();
+                initVolumeAnalysisChart();
+                initRiskMetricsChart();
+                initTierDistributionChart();
+                initPerformanceMetricsChart();
+            }, 100);
+        }
+
+        // Initialize market performance chart
+        function initMarketPerformanceChart() {
+            const ctx = document.getElementById('marketPerformanceChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic market performance data
+            const labels = [];
+            const volume = [];
+            const orders = [];
+            
+            for(let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                volume.push(Math.random() * 10000000 + 5000000);
+                orders.push(Math.random() * 1000 + 500);
+            }
+            
+            charts.marketPerformance = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Volume (₹)',
+                        data: volume,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y',
+                        fill: true
+                    }, {
+                        label: 'Orders',
+                        data: orders,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + (value / 1000000).toFixed(1) + 'M'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize order flow chart
+        function initOrderFlowChart() {
+            const ctx = document.getElementById('orderFlowChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic order flow data
+            const labels = [];
+            const buyOrders = [];
+            const sellOrders = [];
+            
+            for(let i = 23; i >= 0; i--) {
+                const hour = new Date();
+                hour.setHours(hour.getHours() - i);
+                labels.push(hour.getHours() + ':00');
+                
+                buyOrders.push(Math.random() * 100 + 50);
+                sellOrders.push(Math.random() * 100 + 50);
+            }
+            
+            charts.orderFlow = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Buy Orders',
+                        data: buyOrders,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
+                        borderWidth: 1
+                    }, {
+                        label: 'Sell Orders',
+                        data: sellOrders,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: '#ef4444',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize market maker performance chart
+        function initMMPerformanceChart() {
+            const ctx = document.getElementById('mmPerformanceChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic MM performance data
+            const labels = [];
+            const pnl = [];
+            const volume = [];
+            const quotes = [];
+            
+            for(let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                pnl.push((Math.random() - 0.5) * 10000);
+                volume.push(Math.random() * 5000000 + 1000000);
+                quotes.push(Math.random() * 500 + 100);
+            }
+            
+            charts.mmPerformance = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'P&L (₹)',
+                        data: pnl,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y',
+                        fill: true
+                    }, {
+                        label: 'Volume (₹)',
+                        data: volume,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        fill: false
+                    }, {
+                        label: 'Quotes',
+                        data: quotes,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y2',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + value.toLocaleString()
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + (value / 1000000).toFixed(1) + 'M'
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize price analysis chart
+        function initPriceAnalysisChart() {
+            const ctx = document.getElementById('priceAnalysisChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic price analysis data
+            const labels = ['Govt Bonds', 'Corporate Bonds', 'Municipal Bonds', 'Treasury Bills'];
+            const prices = [98.5, 97.2, 96.8, 99.1];
+            const colors = ['#fbbf24', '#10b981', '#3b82f6', '#ef4444'];
+            
+            charts.priceAnalysis = new Chart(chartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: prices,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#d1d5db',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize volume analysis chart
+        function initVolumeAnalysisChart() {
+            const ctx = document.getElementById('volumeAnalysisChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic volume analysis data
+            const labels = [];
+            const lendingVolume = [];
+            const borrowingVolume = [];
+            
+            for(let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                lendingVolume.push(Math.random() * 5000000 + 1000000);
+                borrowingVolume.push(Math.random() * 5000000 + 1000000);
+            }
+            
+            charts.volumeAnalysis = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Lending Volume',
+                        data: lendingVolume,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
+                        borderWidth: 1
+                    }, {
+                        label: 'Borrowing Volume',
+                        data: borrowingVolume,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: '#ef4444',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#d1d5db'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => '₹' + (value / 1000000).toFixed(1) + 'M'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize risk metrics chart
+        function initRiskMetricsChart() {
+            const ctx = document.getElementById('riskMetricsChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic risk metrics data
+            const labels = ['VaR 95%', 'VaR 99%', 'Max Drawdown', 'Sharpe Ratio', 'Beta'];
+            const values = [2.5, 4.2, 8.1, 1.8, 0.95];
+            const colors = ['#ef4444', '#f5c13b', '#3b82f6', '#10b981', '#8b5cf6'];
+            
+            charts.riskMetrics = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Simulate loading dashboard data
+                console.log('Dashboard data loaded');
+                isConnected = true;
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                isConnected = false;
+            }
+        }
+
+        // Load market maker data
+        async function loadMarketMakerData() {
+            try {
+                // Simulate loading market maker data
+                const data = {
+                    totalPnl: 125000,
+                    totalQuotes: 15420,
+                    fillRate: 87.5,
+                    avgSpread: 0.15
+                };
+                displayMarketMakerStats(data);
+            } catch (error) {
+                console.error('Error loading market maker data:', error);
+                document.getElementById('mmStats').innerHTML = `
+                    <div class="error">Failed to load market maker data. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display market maker stats
+        function displayMarketMakerStats(data) {
+            const mmStats = document.getElementById('mmStats');
+            
+            if (!data) {
+                mmStats.innerHTML = '<div class="error">No market maker data available</div>';
+                return;
+            }
+            
+            mmStats.innerHTML = `
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-value positive">₹${data.totalPnl.toLocaleString()}</div>
+                        <div class="metric-label">Total P&L</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${data.totalQuotes.toLocaleString()}</div>
+                        <div class="metric-label">Total Quotes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value positive">${data.fillRate.toFixed(1)}%</div>
+                        <div class="metric-label">Fill Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">₹${data.avgSpread.toFixed(2)}</div>
+                        <div class="metric-label">Avg Spread</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load orders
+        async function loadOrders() {
+            try {
+                // Simulate loading orders
+                const orders = [
+                    {
+                        id: 1,
+                        bondName: 'G-Sec 7.26% 2029',
+                        side: 'BUY',
+                        quantity: 100,
+                        price: 98.45,
+                        status: 'FILLED',
+                        createdAt: new Date(Date.now() - 3600000)
+                    },
+                    {
+                        id: 2,
+                        bondName: 'SBI 6.85% 2027',
+                        side: 'SELL',
+                        quantity: 50,
+                        price: 97.82,
+                        status: 'PENDING',
+                        createdAt: new Date(Date.now() - 1800000)
+                    },
+                    {
+                        id: 3,
+                        bondName: 'RIL 7.15% 2030',
+                        side: 'BUY',
+                        quantity: 200,
+                        price: 96.75,
+                        status: 'CANCELLED',
+                        createdAt: new Date(Date.now() - 900000)
+                    }
+                ];
+                displayOrders(orders);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('ordersTable').innerHTML = `
+                    <div class="error">Failed to load orders. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display orders
+        function displayOrders(orders) {
+            const ordersTable = document.getElementById('ordersTable');
+            
+            if (!orders || orders.length === 0) {
+                ordersTable.innerHTML = '<div class="error">No orders found</div>';
+                return;
+            }
+            
+            ordersTable.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Bond</th>
+                            <th>Side</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(order => `
+                            <tr>
+                                <td>${order.id}</td>
+                                <td>${order.bondName}</td>
+                                <td>${order.side}</td>
+                                <td>${order.quantity}</td>
+                                <td>₹${order.price}</td>
+                                <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                                <td>${order.createdAt.toLocaleString()}</td>
+                                <td>
+                                    ${order.status === 'PENDING' ? `
+                                        <button class="btn btn-danger" onclick="cancelOrder(${order.id})">
+                                            <i class="fas fa-times"></i>
+                                            Cancel
+                                        </button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Load analytics
+        function loadAnalytics() {
+            // Analytics charts are already initialized
+            console.log('Analytics loaded');
+        }
+
+        // Cancel order
+        function cancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order?')) {
+                alert('Order cancelled successfully');
+                loadOrders();
+            }
+        }
+
+        // System actions
+        function refreshMarketData() {
+            loadDashboardData();
+            alert('Market data refreshed');
+        }
+
+        function clearOldOrders() {
+            if (confirm('Are you sure you want to clear old orders?')) {
+                alert('Old orders cleared');
+                loadOrders();
+            }
+        }
+
+        function emergencyStop() {
+            if (confirm('Are you sure you want to trigger emergency stop? This will halt all trading.')) {
+                alert('Emergency stop triggered');
+            }
+        }
+
+        // System configuration form
+        document.getElementById('systemConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('System configuration updated');
+        });
+
+        // Initialize tier distribution chart
+        function initTierDistributionChart() {
+            const ctx = document.getElementById('tierDistributionChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic tier distribution data
+            const labels = ['Platinum', 'Gold', 'Silver', 'Bronze'];
+            const values = [2, 5, 8, 12];
+            const colors = ['#8b5cf6', '#fbbf24', '#6b7280', '#cd7f32'];
+            
+            charts.tierDistribution = new Chart(chartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#d1d5db',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize performance metrics chart
+        function initPerformanceMetricsChart() {
+            const ctx = document.getElementById('performanceMetricsChart');
+            if (!ctx) return;
+            
+            const chartCtx = ctx.getContext('2d');
+            
+            // Generate realistic performance metrics data
+            const labels = ['Fill Rate', 'Spread Tightness', 'Response Time', 'Volume Share', 'Uptime'];
+            const values = [87.5, 92.3, 78.9, 85.2, 99.1];
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            charts.performanceMetrics = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#d1d5db'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(75, 85, 99, 0.3)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load market makers
+        async function loadMarketMakers() {
+            try {
+                // Use realistic market maker data
+                marketMakers = [
+                    {
+                        id: 1,
+                        name: 'Alpha Capital Markets',
+                        tier: 'Platinum',
+                        volume: 2500000000,
+                        fillRate: 94.2,
+                        spreadTightness: 95.8,
+                        responseTime: 45,
+                        uptime: 99.8,
+                        feeRebate: 0.15,
+                        liquidityPoints: 12500
+                    },
+                    {
+                        id: 2,
+                        name: 'Beta Securities',
+                        tier: 'Gold',
+                        volume: 1800000000,
+                        fillRate: 89.5,
+                        spreadTightness: 91.2,
+                        responseTime: 52,
+                        uptime: 99.5,
+                        feeRebate: 0.12,
+                        liquidityPoints: 8900
+                    },
+                    {
+                        id: 3,
+                        name: 'Gamma Trading',
+                        tier: 'Silver',
+                        volume: 1200000000,
+                        fillRate: 85.3,
+                        spreadTightness: 88.7,
+                        responseTime: 68,
+                        uptime: 99.2,
+                        feeRebate: 0.08,
+                        liquidityPoints: 6200
+                    },
+                    {
+                        id: 4,
+                        name: 'Delta Investments',
+                        tier: 'Bronze',
+                        volume: 800000000,
+                        fillRate: 82.1,
+                        spreadTightness: 85.4,
+                        responseTime: 78,
+                        uptime: 98.9,
+                        feeRebate: 0.05,
+                        liquidityPoints: 4200
+                    },
+                    {
+                        id: 5,
+                        name: 'Epsilon Capital',
+                        tier: 'Bronze',
+                        volume: 600000000,
+                        fillRate: 79.8,
+                        spreadTightness: 83.2,
+                        responseTime: 85,
+                        uptime: 98.5,
+                        feeRebate: 0.03,
+                        liquidityPoints: 3100
+                    }
+                ];
+                displayMarketMakerTiers();
+                displayMarketMakerList();
+            } catch (error) {
+                console.error('Error loading market makers:', error);
+                document.getElementById('marketMakerTiers').innerHTML = `
+                    <div class="error">Failed to load market maker data. Please check your connection.</div>
+                `;
+            }
+        }
+
+        // Display market maker tiers
+        function displayMarketMakerTiers() {
+            const marketMakerTiers = document.getElementById('marketMakerTiers');
+            
+            if (!marketMakers || marketMakers.length === 0) {
+                marketMakerTiers.innerHTML = '<div class="error">No market maker data available</div>';
+                return;
+            }
+            
+            // Calculate tier statistics
+            const tierStats = marketMakers.reduce((acc, mm) => {
+                if (!acc[mm.tier]) {
+                    acc[mm.tier] = { count: 0, totalVolume: 0, avgFillRate: 0 };
+                }
+                acc[mm.tier].count++;
+                acc[mm.tier].totalVolume += mm.volume;
+                acc[mm.tier].avgFillRate += mm.fillRate;
+                return acc;
+            }, {});
+            
+            // Calculate averages
+            Object.keys(tierStats).forEach(tier => {
+                tierStats[tier].avgFillRate = (tierStats[tier].avgFillRate / tierStats[tier].count).toFixed(1);
+            });
+            
+            marketMakerTiers.innerHTML = `
+                <div class="metrics-grid">
+                    ${Object.keys(tierStats).map(tier => `
+                        <div class="metric">
+                            <div class="metric-value">${tierStats[tier].count}</div>
+                            <div class="metric-label">${tier} Market Makers</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="metrics-grid" style="margin-top: 1rem;">
+                    <div class="metric">
+                        <div class="metric-value">₹${(marketMakers.reduce((sum, mm) => sum + mm.volume, 0) / 1000000000).toFixed(1)}B</div>
+                        <div class="metric-label">Total Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${(marketMakers.reduce((sum, mm) => sum + mm.fillRate, 0) / marketMakers.length).toFixed(1)}%</div>
+                        <div class="metric-label">Avg Fill Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${marketMakers.length}</div>
+                        <div class="metric-label">Active MMs</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display market maker list
+        function displayMarketMakerList() {
+            const marketMakerList = document.getElementById('marketMakerList');
+            
+            if (!marketMakers || marketMakers.length === 0) {
+                marketMakerList.innerHTML = '<div class="error">No market makers found</div>';
+                return;
+            }
+            
+            marketMakerList.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tier</th>
+                            <th>Volume (₹)</th>
+                            <th>Fill Rate</th>
+                            <th>Spread Tightness</th>
+                            <th>Response Time (ms)</th>
+                            <th>Uptime</th>
+                            <th>Fee Rebate</th>
+                            <th>Liquidity Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${marketMakers.map(mm => `
+                            <tr>
+                                <td>${mm.name}</td>
+                                <td><span class="status-badge status-${mm.tier.toLowerCase()}">${mm.tier}</span></td>
+                                <td>₹${(mm.volume / 1000000).toFixed(1)}M</td>
+                                <td>${mm.fillRate}%</td>
+                                <td>${mm.spreadTightness}%</td>
+                                <td>${mm.responseTime}</td>
+                                <td>${mm.uptime}%</td>
+                                <td>${(mm.feeRebate * 100).toFixed(1)}%</td>
+                                <td>${mm.liquidityPoints.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+    </script>
+</body>
+</html>
