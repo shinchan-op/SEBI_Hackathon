@@ -2,6 +2,8 @@
 
 A comprehensive bond trading platform built with NestJS backend and modern web frontend, featuring real-time trading, portfolio management, and market analytics.
 
+<img width="1133" height="838" alt="image" src="https://github.com/user-attachments/assets/2b108686-5110-48a5-afcc-d14f22810197" />
+
 ## 🚀 Quick Start
 
 1. **Start the Platform**
@@ -60,12 +62,16 @@ SEBI/
 - **Order History**: View and manage all orders
 - **Interactive Charts**: Price trends, order book, and portfolio analysis
 
+<img width="1431" height="848" alt="image" src="https://github.com/user-attachments/assets/590aa2a4-3645-454d-880c-2afe214251a1" />
+
 ### Exchange Portal
 - **Dashboard**: System metrics and performance overview
 - **Market Maker Tools**: Performance tracking and analytics
 - **Order Management**: View and manage all orders
 - **Analytics**: Comprehensive market analysis and risk metrics
 - **Administration**: System configuration and controls
+
+<img width="1511" height="709" alt="image" src="https://github.com/user-attachments/assets/31b75d9f-65ac-48c9-b585-718d2bb8993a" />
 
 ## 📊 Key Features
 
@@ -75,17 +81,32 @@ SEBI/
 - Portfolio tracking with performance metrics
 - Order history and status tracking
 
+<img width="1095" height="738" alt="image" src="https://github.com/user-attachments/assets/1481ea42-c362-4305-83a6-731d1bc09e76" />
+<img width="1112" height="706" alt="image" src="https://github.com/user-attachments/assets/90f2ef00-72c1-4146-b3b4-bfd96f27b674" />
+<img width="1093" height="752" alt="image" src="https://github.com/user-attachments/assets/098389d3-8416-42d5-ae63-cb34cc52d661" />
+<img width="1097" height="778" alt="image" src="https://github.com/user-attachments/assets/174b0bc9-bcbc-45e3-9f7e-a1ae1aaa8c6c" />
+
 ### Market Data
 - Live price feeds with interactive charts
 - Historical data analysis
 - Market statistics and trends
 - Risk metrics and analytics
 
+<img width="1092" height="821" alt="image" src="https://github.com/user-attachments/assets/39f09810-23ce-430e-80da-35051e5815ae" />
+
+
+
 ### Administration
 - System monitoring and health checks
 - Order management and oversight
 - Market maker performance tracking
 - Emergency controls and system configuration
+
+<img width="1093" height="663" alt="image" src="https://github.com/user-attachments/assets/2c47d452-35af-444d-852a-1f262dd92ff6" />
+<img width="1104" height="735" alt="image" src="https://github.com/user-attachments/assets/a8f2c096-1652-4354-87cf-1c7805e395f8" />
+<img width="1089" height="853" alt="image" src="https://github.com/user-attachments/assets/e3bc4e71-0edd-4209-9a88-3da2a539a379" />
+<img width="1090" height="547" alt="image" src="https://github.com/user-attachments/assets/ed7ffa67-1048-4c77-ad3e-ce0a432c7f91" />
+
 
 ## 🚀 Getting Started
 
